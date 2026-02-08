@@ -14,7 +14,3 @@ app.include_router(telegram_router)
 app.include_router(scheduler_router)
 
 
-@app.get("/debug/messages")
-def list_messages():
-    with Session(engine) as session:
-        return session.exec(select(Message)).all()

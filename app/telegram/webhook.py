@@ -1,5 +1,5 @@
 from fastapi import APIRouter, BackgroundTasks
-from app.services.reminder import handle_user_message, get_list_messages
+from app.services.reminder import handle_user_message, debug_overview
 
 router = APIRouter()
 
@@ -10,6 +10,6 @@ async def telegram_webhook(update: dict, background_tasks: BackgroundTasks):
     return {"ok": True}
 
 
-@router.get("/debug/messages")
-def list_messages():
-    return get_list_messages()
+@router.get("/debug/overview")
+def debug_overview_endpoint():
+    return debug_overview()
