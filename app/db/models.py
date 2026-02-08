@@ -13,3 +13,9 @@ class Reminder(SQLModel, table=True):
     next_reminder_at: datetime
     status: str = "pending"
     follow_up_count: int = 0
+
+class Message(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    telegram_id: int = Field(index=True)
+    text: str
+    created_at: datetime = Field(default_factory=datetime.utcnow)

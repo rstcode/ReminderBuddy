@@ -11,7 +11,3 @@ class Settings(BaseSettings):
 
 settings = Settings()
 
-# Backwards-compatible module-level constants
-DATABASE_URL = settings.DATABASE_URL
-TELEGRAM_BOT_TOKEN = settings.TELEGRAM_BOT_TOKEN
-SCHEDULER_SECRET = settings.SCHEDULER_SECRET

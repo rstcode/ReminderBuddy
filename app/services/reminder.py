@@ -1,3 +1,7 @@
+from sqlmodel import Session, select
+from app.db.database import engine
+from app.db.models import Message
+
 def handle_user_message(update: dict):
     message = update.get("message", {})
     text = message.get("text")
@@ -5,10 +9,17 @@ def handle_user_message(update: dict):
 
     telegram_id = user.get("id")
 
-    print(f"[MSG] {telegram_id}: {text}")
+    with Session(engine) as session:
+        msg = Message(
+            telegram_id=telegram_id,
+            text=text
+        )
+        session.add(msg)
+        session.commit()
 
-    # TODO:
-    # 1. find or create user
-    # 2. detect intent (AI later)
-    # 3. update reminder
-    # 4. send Telegram reply
+    print(f"[SAVED] {telegram_id}: {text}")
+
+
+def get_list_messages():
+    with Session(engine) as session:
+        return session.exec(select(Message)).all()
