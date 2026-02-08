@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+sqlmodel
+python-dotenv
+httpx
+pydantic
+pydantic-settings
