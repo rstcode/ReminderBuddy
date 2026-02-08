@@ -9,7 +9,6 @@ async def telegram_webhook(update: dict, background_tasks: BackgroundTasks):
     background_tasks.add_task(handle_user_message, update)
     return {"ok": True}
 
-
 @router.get("/debug/overview")
 def debug_overview_endpoint():
     return debug_overview()
