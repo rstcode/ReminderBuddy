@@ -7,31 +7,29 @@ from app.telegram.client import send_telegram_message
 
 async def handle_user_message(update: dict):
     message = update.get("message", {})
-    text = message.get("text")
+    text = message.get("text", "").strip()
 
     user_data = message.get("from", {})
     telegram_id = user_data.get("id")
 
     if not telegram_id or not text:
-        print("Invalid message payload")
         return
 
-    text = text.strip()
-
     with Session(engine) as session:
-        # 1️⃣ Get or create user
+        # 1️⃣ Ensure user exists
         user = get_or_create_user(session, telegram_id)
 
         # 2️⃣ Save incoming message
-        msg = Message( 
-            telegram_id=telegram_id,
-            user_id=user.id,
-            text=text
+        session.add(
+            Message(
+                user_id=user.id,
+                telegram_id=telegram_id,
+                text=text
+            )
         )
-        session.add(msg)
         session.commit()
 
-        # 3️⃣ Basic reminder creation rule
+        # 3️⃣ Immediate interaction logic
         if "test reminder" in text.lower():
             next_time = datetime.utcnow() + timedelta(minutes=1)
 
@@ -47,16 +45,15 @@ async def handle_user_message(update: dict):
                 text="👍 Got it! I’ll remind you shortly."
             )
 
+            print(f"[IMMEDIATE REPLY] Reminder {reminder.id} created")
 
-            print(
-                f"[REMINDER CREATED] "
-                f"User={user.id} "
-                f"Task='{reminder.task}' "
-                f"NextAt={next_time.isoformat()}"
-            )
         else:
-            print(f"[MESSAGE] User={user.id} Text='{text}'")
+            await send_telegram_message(
+                chat_id=telegram_id,
+                text="👋 I heard you.\nTry sending: test reminder"
+            )
 
+            print(f"[IMMEDIATE REPLY] Default reply sent")
 
 def debug_overview():
     data = []
