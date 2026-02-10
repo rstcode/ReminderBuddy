@@ -11,21 +11,20 @@ router = APIRouter()
 
 @router.post("/internal/run-reminders")
 def run_reminders(authorization: str = Header(None)):
-    # 1️⃣ Auth check
+    # 🔐 Enable later
     # if authorization != f"Bearer {settings.SCHEDULER_SECRET}":
     #     raise HTTPException(status_code=401, detail="Unauthorized")
 
-    now = datetime.utcnow()
+    now = datetime.now()
+    response_reminders = []
 
     with Session(engine) as session:
-        # 2️⃣ Fetch due reminders
         due_reminders = get_due_reminders(session, now)
 
         if not due_reminders:
             print("[SCHEDULER] No due reminders")
-            return {"status": "ok", "due": 0}
+            return {"status": "ok", "due": 0, "reminders": []}
 
-        # 3️⃣ Process due reminders
         for reminder in due_reminders:
             print(
                 f"[DUE REMINDER] "
@@ -35,10 +34,20 @@ def run_reminders(authorization: str = Header(None)):
                 f"At={reminder.next_reminder_at}"
             )
 
-            # 4️⃣ For now: reschedule again after 10 minutes
-            # (acts like a placeholder for Telegram send)
-            new_time = now.replace(microsecond=0)
-            new_time = new_time + timedelta(minutes=2)
+            # ✅ Convert ORM → dict BEFORE commit
+            response_reminders.append({
+                "id": reminder.id,
+                "user_id": reminder.user_id,
+                "task": reminder.task,
+                "status": reminder.status,
+                "next_reminder_at": reminder.next_reminder_at,
+                "follow_up_count": reminder.follow_up_count,
+                "created_at": reminder.created_at,
+                "updated_at": reminder.updated_at,
+            })
+
+            # ⏰ Reschedule
+            new_time = now.replace(microsecond=0) + timedelta(minutes=2)
 
             reschedule_reminder(
                 session=session,
@@ -46,4 +55,8 @@ def run_reminders(authorization: str = Header(None)):
                 new_time=new_time
             )
 
-        return { "status": "ok", "due": len(due_reminders), "reminders":due_reminders}
+        return {
+            "status": "ok",
+            "due": len(response_reminders),
+            "reminders": response_reminders
+        }

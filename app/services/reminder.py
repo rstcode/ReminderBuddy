@@ -2,7 +2,7 @@ from sqlmodel import Session, select
 from datetime import datetime, timedelta
 from app.db.database import engine
 from app.db.models import Message, Reminder, User
-from app.db.crud import get_or_create_user, create_reminder
+from app.db.crud import get_active_reminder_for_user, get_or_create_user, create_reminder, mark_reminder_done, reschedule_reminder
 from app.telegram.client import send_telegram_message
 
 async def handle_user_message(update: dict):
@@ -29,9 +29,11 @@ async def handle_user_message(update: dict):
         )
         session.commit()
 
-        # 3️⃣ Immediate interaction logic
-        if "test reminder" in text.lower():
-            next_time = datetime.utcnow() + timedelta(minutes=1)
+        # 3️ Command handling
+        text_lower = text.lower()
+
+        if "test reminder" in text:
+            next_time = datetime.now() + timedelta(minutes=1)
 
             reminder = create_reminder(
                 session=session,
@@ -46,6 +48,63 @@ async def handle_user_message(update: dict):
             )
 
             print(f"[IMMEDIATE REPLY] Reminder {reminder.id} created")
+
+        # ✅ DONE COMMAND
+        if text_lower == "done":
+            active_reminder = get_active_reminder_for_user(
+                session=session,
+                user_id=user.id
+            )
+
+            if not active_reminder:
+                await send_telegram_message(
+                    chat_id=telegram_id,
+                    text="👍 You have no active reminders."
+                )
+                return
+
+            mark_reminder_done(session, active_reminder)
+
+            await send_telegram_message(
+                chat_id=telegram_id,
+                text=f"✅ Done! I’ve marked this as completed:\n{active_reminder.task}"
+            )
+
+            print(f"[DONE] Reminder {active_reminder.id} completed")
+            return
+
+        # ⏳ LATER COMMAND
+        if text_lower == "later":
+            active_reminder = get_active_reminder_for_user(session, user.id)
+
+            if not active_reminder:
+                await send_telegram_message(
+                    chat_id=telegram_id,
+                    text="👍 You have no active reminders to postpone."
+                )
+                return
+
+            new_time = datetime.now() + timedelta(minutes=10)
+
+            reschedule_reminder(
+                session=session,
+                reminder=active_reminder,
+                new_time=new_time
+            )
+
+            await send_telegram_message(
+                chat_id=telegram_id,
+                text=(
+                    f"⏳ No problem! I’ll remind you again in 10 minutes.\n\n"
+                    f"📝 {active_reminder.task}"
+                )
+            )
+
+            print(
+                f"[LATER] Reminder {active_reminder.id} "
+                f"rescheduled to {new_time}"
+            )
+            return
 
         else:
             await send_telegram_message(

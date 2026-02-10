@@ -7,7 +7,7 @@ class User(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     telegram_id: int = Field(index=True, unique=True)
 
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=datetime.now)
 
     # relationship
     reminders: List["Reminder"] = Relationship(back_populates="user")
@@ -25,8 +25,8 @@ class Reminder(SQLModel, table=True):
 
     follow_up_count: int = Field(default=0)
 
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=datetime.now)
+    updated_at: datetime = Field(default_factory=datetime.now)
 
     # relationship
     user: Optional[User] = Relationship(back_populates="reminders")
@@ -39,4 +39,4 @@ class Message(SQLModel, table=True):
     telegram_id: int = Field(index=True)
     text: str
 
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=datetime.now)

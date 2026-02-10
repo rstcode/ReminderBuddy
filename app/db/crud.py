@@ -47,7 +47,7 @@ def get_active_reminder_for_user(session: Session, user_id: int) -> Optional[Rem
 def reschedule_reminder(session: Session, reminder: Reminder, new_time: datetime) -> Reminder:
     reminder.next_reminder_at = new_time
     reminder.follow_up_count += 1
-    reminder.updated_at = datetime.utcnow()
+    reminder.updated_at = datetime.now()
 
     session.add(reminder)
     session.commit()
@@ -57,7 +57,7 @@ def reschedule_reminder(session: Session, reminder: Reminder, new_time: datetime
 
 def mark_reminder_done(session: Session, reminder: Reminder) -> Reminder:
     reminder.status = "done"
-    reminder.updated_at = datetime.utcnow()
+    reminder.updated_at = datetime.now()
 
     session.add(reminder)
     session.commit()

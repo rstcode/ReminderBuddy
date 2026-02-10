@@ -50,7 +50,7 @@ def main():
 
         if added:
             # set existing NULLs to current time
-            now = datetime.utcnow().isoformat(sep=" ")
+            now = datetime.now().isoformat(sep=" ")
             conn.execute("UPDATE reminder SET created_at = ? WHERE created_at IS NULL", (now,))
             conn.execute("UPDATE reminder SET updated_at = ? WHERE updated_at IS NULL", (now,))
             conn.commit()
