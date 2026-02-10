@@ -3,8 +3,9 @@ from datetime import datetime, timedelta
 from app.db.database import engine
 from app.db.models import Message, Reminder, User
 from app.db.crud import get_or_create_user, create_reminder
+from app.telegram.client import send_telegram_message
 
-def handle_user_message(update: dict):
+async def handle_user_message(update: dict):
     message = update.get("message", {})
     text = message.get("text")
 
@@ -31,26 +32,26 @@ def handle_user_message(update: dict):
         session.commit()
 
         # 3️⃣ Basic reminder creation rule
-        if text.lower().startswith("remind"):
-            task = text[len("remind"):].strip()
-
-            if not task:
-                print("[REMINDER] No task provided")
-                return
-
-            next_time = datetime.utcnow() + timedelta(minutes=10)
+        if "test reminder" in text.lower():
+            next_time = datetime.utcnow() + timedelta(minutes=1)
 
             reminder = create_reminder(
                 session=session,
                 user_id=user.id,
-                task=task,
+                task="Test Scheduler Flow",
                 next_reminder_at=next_time
             )
+
+            await send_telegram_message(
+                chat_id=telegram_id,
+                text="👍 Got it! I’ll remind you shortly."
+            )
+
 
             print(
                 f"[REMINDER CREATED] "
                 f"User={user.id} "
-                f"Task='{task}' "
+                f"Task='{reminder.task}' "
                 f"NextAt={next_time.isoformat()}"
             )
         else:

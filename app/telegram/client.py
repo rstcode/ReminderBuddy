@@ -2,7 +2,7 @@ import httpx
 from app.core.config import settings
 
 
-async def send_message(chat_id: int, text: str):
+async def send_telegram_message(chat_id: int, text: str):
     if not settings.TELEGRAM_BOT_TOKEN:
         raise RuntimeError("TELEGRAM_BOT_TOKEN is not configured")
 

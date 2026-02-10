@@ -38,7 +38,7 @@ def run_reminders(authorization: str = Header(None)):
             # 4️⃣ For now: reschedule again after 10 minutes
             # (acts like a placeholder for Telegram send)
             new_time = now.replace(microsecond=0)
-            new_time = new_time + timedelta(minutes=10)
+            new_time = new_time + timedelta(minutes=2)
 
             reschedule_reminder(
                 session=session,
