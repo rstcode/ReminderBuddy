@@ -87,11 +87,7 @@ async def run_reminders(credentials: HTTPAuthorizationCredentials = Depends(secu
             # ⏳ Reschedule
             new_time = now + timedelta(minutes=delay_minutes)
 
-            reschedule_reminder(
-                session=session,
-                reminder=reminder,
-                new_time=new_time
-            )
+            reschedule_reminder(session=session, reminder=reminder, new_time=new_time)
 
         return {
             "status": "ok",

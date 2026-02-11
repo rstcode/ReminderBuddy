@@ -2,15 +2,18 @@ name: Reminder Scheduler
 
 on:
   schedule:
-    - cron: "*/5 0-17 * * *"   # every 5 minutes, 12:00 AM – 5:55 PM UTC
+    - cron: "0,5,10,15,20,25,30,35,40,45,50,55 0-17 * * *"  # every 5 minutes, 12:00 AM – 5:55 PM UTC
   workflow_dispatch:
 
 jobs:
   run-reminders:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Trigger Reminder Scheduler
         run: |
           curl -X POST "${{ secrets.BACKEND_URL }}/internal/run-reminders" \
             -H "Authorization: Bearer ${{ secrets.SCHEDULER_SECRET }}" \
-            -H "Content-Type: application/json"
+            -H "Content-Type: application/json" \
+            -w "\nHTTP Status: %{http_code}\n" \
+            -f
